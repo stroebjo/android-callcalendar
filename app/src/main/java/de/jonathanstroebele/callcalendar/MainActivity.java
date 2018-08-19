@@ -56,11 +56,10 @@ public class MainActivity extends AppCompatActivity {
         sharedPref = this.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
 
-
-
         Switch onOffSwitch = (Switch) findViewById(R.id.switch1);
+        int isOn = sharedPref.getInt(getString(R.string.preference_on), 0);
 
-        if (sharedPref.getInt(getString(R.string.preference_on), 0) == 1) {
+        if (isOn == 1) {
             onOffSwitch.setOnCheckedChangeListener (null); // make sure nur event listener is present
             onOffSwitch.setChecked(true);
         }
@@ -124,11 +123,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case MY_PERMISSIONS_REQUEST_ALL:
-                for(int i = 0; i < grantResults.length; i++) {
+
+                // at index 1 is READ_CALENDAR
+                if (grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    _populateCalendarSpinner();
+                }
+
+
+
+                /*for(int i = 0; i < grantResults.length; i++) {
                     if (permissions[i] == Manifest.permission.READ_CALENDAR) {
                         _populateCalendarSpinner();
                     }
-                }
+                }*/
         }
     }
 

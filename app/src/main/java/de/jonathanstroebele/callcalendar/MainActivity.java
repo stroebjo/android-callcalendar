@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_REQUEST_ALL:
 
                 // at index 1 is READ_CALENDAR
-                if (grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
                     _populateCalendarSpinner();
                 }
 
@@ -185,19 +185,25 @@ public class MainActivity extends AppCompatActivity {
     private void _requestAllPermissions() {
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.PROCESS_OUTGOING_CALLS,
                 Manifest.permission.READ_CALENDAR,
                 Manifest.permission.WRITE_CALENDAR,
-                Manifest.permission.READ_CONTACTS
+                Manifest.permission.READ_CONTACTS,
         }, MY_PERMISSIONS_REQUEST_ALL);
     }
 
     private void requestPermissions() {
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) ||
+                (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) ||
                 (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED)  ) {
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CALL_LOG) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE) ||
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.PROCESS_OUTGOING_CALLS) ||
                     ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CALENDAR) ||
                     ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_CALENDAR) ||
                     ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
@@ -227,48 +233,63 @@ public class MainActivity extends AppCompatActivity {
 
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
-        // Do something in response to button
 
-        //EditText editText = (EditText) findViewById(R.id.editText5);
+        // check if app is enabled in't settings
+        if (sharedPref.getInt(this.getString(R.string.preference_on), 0) != 1) {
+            return;
+        }
+
+        // check for call log permission: read latest call log entry
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        // check for write calendar permission: save event in calendar
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        // last call entry
+        Cursor cursor = this.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, CallLog.Calls.DATE + " DESC LIMIT 1");
+
+        int number = cursor.getColumnIndex(CallLog.Calls.NUMBER);
+        int type = cursor.getColumnIndex(CallLog.Calls.TYPE);
+        int date = cursor.getColumnIndex(CallLog.Calls.DATE);
+        int duration = cursor.getColumnIndex(CallLog.Calls.DURATION);
+
+        while (cursor.moveToNext()) {
+
+            CallLogEntry cle = new CallLogEntry(this);
+            cle.setNumber(cursor.getString(number));
+            cle.setCallType(cursor.getInt(type));
+            cle.setCallStart(cursor.getLong(date));
+            cle.setCallDuration(cursor.getLong(duration));
 
 
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CALL_LOG)
-                != PackageManager.PERMISSION_GRANTED) {
+            try {
 
-            // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_CALL_LOG)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-            } else {
-                // No explanation needed; request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_CALL_LOG},
-                        0);
+                long calendar_id = sharedPref.getLong(this.getString(R.string.preference_calendar_id), 0);
+                ContentValues values = cle.getCallEvent(calendar_id);
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
+                Uri uri = this.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, values);
+
+                Context context = getApplicationContext();
+                CharSequence text = "Added to calendar: " + cle;
+                int toastduration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, toastduration);
+                toast.show();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } else {
-            // Permission has already been granted
 
-            //String foo = this.getCallDetails(this);
-
-            //editText.append(foo);
         }
 
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
-        CalendarSpinner st = (CalendarSpinner) spinner.getSelectedItem();
+        cursor.close();
 
-
-        //editText.append( Long.toString( st.id) );
     }
 
     public void importCalls(View view) {

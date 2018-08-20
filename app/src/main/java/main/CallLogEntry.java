@@ -16,8 +16,6 @@ import java.util.TimeZone;
 
 import de.jonathanstroebele.callcalendar.R;
 
-import static android.provider.Settings.System.getString;
-
 public class CallLogEntry {
 
     private String number;
@@ -28,13 +26,12 @@ public class CallLogEntry {
 
     private long callDuration;
 
-    Context context;
+    private Context context;
 
 
     public CallLogEntry(Context context) {
         this.context = context;
     }
-
 
     public ContentValues getCallEvent(long calendar_id) {
         ContentValues values = new ContentValues();
@@ -56,7 +53,6 @@ public class CallLogEntry {
         return values;
     }
 
-
     public String getTitle() {
         String title = "";
 
@@ -74,11 +70,23 @@ public class CallLogEntry {
         }
 
         return title;
+    }
+
+    public String getDescription() {
+
+
+        return null;
 
     }
 
-    public String getContactName(String number) {
-
+    /**
+     * Get the contacts name from the addressbook, if permission was granted.
+     * Otherwise just return the given phone number.
+     *
+     * @param String number
+     * @return String
+     */
+    private String getContactName(String number) {
         String name = number;
 
         if (ContextCompat.checkSelfPermission(this.context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
@@ -97,6 +105,11 @@ public class CallLogEntry {
         }
 
         return name;
+    }
+
+
+    public String toString() {
+        return getTitle();
     }
 
     //

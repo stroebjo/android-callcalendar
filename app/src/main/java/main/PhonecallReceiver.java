@@ -7,6 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.TelephonyManager;
 
+/**
+ * See https://stackoverflow.com/a/15564021/723769
+ *
+ *
+ */
 public abstract class PhonecallReceiver extends BroadcastReceiver {
 
     //The receiver will be recreated whenever android feels like it.  We need a static variable to remember data between instantiations

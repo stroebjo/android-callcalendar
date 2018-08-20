@@ -10,6 +10,7 @@ import android.provider.CalendarContract;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.support.v4.content.ContextCompat;
+import android.text.format.DateUtils;
 
 import java.util.Date;
 import java.util.TimeZone;
@@ -38,14 +39,12 @@ public class CallLogEntry {
 
         long stTime = getCallStart().getTime();
         long enTime = stTime + (getCallDuration() * 1000); // convert seconds to milli seconds
-
         TimeZone timeZone = TimeZone.getDefault();
-
 
         values.put(CalendarContract.Events.DTSTART, stTime);
         values.put(CalendarContract.Events.DTEND, enTime);
         values.put(CalendarContract.Events.TITLE, getTitle());
-        values.put(CalendarContract.Events.DESCRIPTION, "descr");
+        values.put(CalendarContract.Events.DESCRIPTION, getDescription());
         values.put(CalendarContract.Events.CALENDAR_ID, calendar_id);
         //values.put(CalendarContract.Events.EVENT_LOCATION, place);
         values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
@@ -56,38 +55,60 @@ public class CallLogEntry {
     public String getTitle() {
         String title = "";
 
+        String contactName = getContactName(getNumber());
+
+        if (contactName == null) {
+            contactName = getNumber();
+        }
+
         switch (getCallType()) {
             case CallLog.Calls.OUTGOING_TYPE:
-                title = context.getResources().getString(R.string.event_title_outgoing, getContactName(getNumber()));
+                title = context.getResources().getString(R.string.event_title_outgoing, contactName);
                 break;
             case CallLog.Calls.INCOMING_TYPE:
-                title = context.getResources().getString(R.string.event_title_incoming, getContactName(getNumber()));
+                title = context.getResources().getString(R.string.event_title_incoming, contactName);
                 break;
 
             case CallLog.Calls.MISSED_TYPE:
-                title = context.getResources().getString(R.string.event_title_missed, getContactName(getNumber()));
+                title = context.getResources().getString(R.string.event_title_missed, contactName);
                 break;
+        }
+
+        // add duration if available
+        if (getCallDuration() > 0) {
+           title += String.format(" (%s)", DateUtils.formatElapsedTime(getCallDuration()));
         }
 
         return title;
     }
 
     public String getDescription() {
+        String description = "";
 
+        description += context.getResources().getString(R.string.event_description_number, getNumber() ) + "\n";
 
-        return null;
+        if (getContactName(getNumber()) != null) {
+            description += context.getResources().getString(R.string.event_description_name, getContactName(getNumber()) ) + "\n";
+        }
 
+        if (getCallDuration() > 0) {
+            description += context.getResources().getString(R.string.event_description_duration, DateUtils.formatElapsedTime(getCallDuration()) ) + "\n";
+        }
+
+        return description;
     }
 
     /**
-     * Get the contacts name from the addressbook, if permission was granted.
-     * Otherwise just return the given phone number.
+     * Get the contacts name from the address book, if permission was granted.
+     * Otherwise return NULL.
      *
-     * @param String number
-     * @return String
+     * todo: caching of the query result?
+     *
+     * @param number
+     * @return String|null
      */
     private String getContactName(String number) {
-        String name = number;
+        String name = null;
 
         if (ContextCompat.checkSelfPermission(this.context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
 

@@ -1,14 +1,22 @@
 <resources>
     <string name="app_name">CallCalendar</string>
+
     <string name="import_current">Import existing call log</string>
+    <string name="permissions_explanation_title">Permissions</string>
+    <string name="permissions_explanation_description">Calllog is needed to fetch the actual Calllog. Calendar is needed to list available calendars and write events to the selected one. Contacts is needed to get the contact name for a given number. Phone State and Outgoing calls is needed to register a receiver to add calls to the calender directly after a call.</string>
+
+
     <string name="event_title_outgoing">Call to %1$s</string>
     <string name="event_title_incoming">Call from %1$s</string>
     <string name="event_title_missed">Missed call from %1$s</string>
+
+    <string name="event_description_number">Number: %1$s</string>
+    <string name="event_description_name">Name: %1$s</string>
+    <string name="event_description_duration">Duration: %1$s</string>
 
 
     <string name="preference_file_key">de.jonathanstroebele.callcalendar.preferences</string>
     <string name="preference_on">de.jonathanstroebele.callcalendar.preferences.on</string>
     <string name="preference_calendar_id">de.jonathanstroebele.callcalendar.preferences.calendar_id</string>
     <string name="preference_calendar_name">de.jonathanstroebele.callcalendar.preferences.calendar_name</string>
-
 </resources>

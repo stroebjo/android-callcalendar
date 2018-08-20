@@ -13,7 +13,7 @@ public class CalendarSpinner {
     }
 
     public String toString() {
-        return name + " (" + Long.toString(id) + ")" ;
+        return name;
     }
 
     @Override

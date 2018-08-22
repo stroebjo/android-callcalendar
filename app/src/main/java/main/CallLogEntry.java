@@ -55,10 +55,10 @@ public class CallLogEntry {
     public String getTitle() {
         String title = "";
 
-        String contactName = getContactName(getNumber());
+        String contactName = getContactName();
 
         if (contactName == null) {
-            contactName = getNumber();
+            contactName = getNumberName();
         }
 
         switch (getCallType()) {
@@ -85,10 +85,10 @@ public class CallLogEntry {
     public String getDescription() {
         String description = "";
 
-        description += context.getResources().getString(R.string.event_description_number, getNumber() ) + "\n";
+        description += context.getResources().getString(R.string.event_description_number, getNumberName() ) + "\n";
 
-        if (getContactName(getNumber()) != null) {
-            description += context.getResources().getString(R.string.event_description_name, getContactName(getNumber()) ) + "\n";
+        if (getContactName() != null) {
+            description += context.getResources().getString(R.string.event_description_name, getContactName() ) + "\n";
         }
 
         if (getCallDuration() > 0) {
@@ -98,36 +98,40 @@ public class CallLogEntry {
         return description;
     }
 
+    private String getNumberName() {
+        String nr = getNumber();
+        return (nr == null) ? context.getString(R.string.number_unknown) : nr;
+    }
+
     /**
      * Get the contacts name from the address book, if permission was granted.
      * Otherwise return NULL.
      *
      * todo: caching of the query result?
      *
-     * @param number
      * @return String|null
      */
-    private String getContactName(String number) {
-        String name = null;
+    private String getContactName() {
+        String number = getNumber();
 
-        if (ContextCompat.checkSelfPermission(this.context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+        if (number != null && ContextCompat.checkSelfPermission(this.context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
 
-            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+            Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode( number ));
             String[] projection = new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME};
 
             Cursor cursor = context.getContentResolver().query(uri, projection,null,null,null);
 
             if (cursor != null) {
                 if(cursor.moveToFirst()) {
-                    name = cursor.getString(0);
+                    String name = cursor.getString(0);
+                    cursor.close();
+                    return name;
                 }
-                cursor.close();
             }
         }
 
-        return name;
+        return null;
     }
-
 
     public String toString() {
         return getTitle();

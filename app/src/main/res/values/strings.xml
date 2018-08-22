@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">CallCalendar</string>
 
+    <string name="number_unknown">Unknown</string>
+
     <string name="import_current">Import existing call log</string>
     <string name="permissions_explanation_title">Permissions</string>
     <string name="permissions_explanation_description">Calllog is needed to fetch the actual Calllog. Calendar is needed to list available calendars and write events to the selected one. Contacts is needed to get the contact name for a given number. Phone State and Outgoing calls is needed to register a receiver to add calls to the calender directly after a call.</string>

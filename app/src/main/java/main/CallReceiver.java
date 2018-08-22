@@ -10,12 +10,16 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CallLog;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import java.util.Date;
 
 import de.jonathanstroebele.callcalendar.R;
 
 public class CallReceiver extends PhonecallReceiver {
+
+    private static final String TAG = "CallReceiver";
+
 
     @Override
     protected void onIncomingCallReceived(Context ctx, String number, Date start)
@@ -32,6 +36,9 @@ public class CallReceiver extends PhonecallReceiver {
     @Override
     protected void onIncomingCallEnded(Context ctx, String number, Date start, Date end)
     {
+        Log.d(TAG, "onIncomingCallEnded: " + number);
+
+
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
         // check if app is enabled in't settings
@@ -72,6 +79,8 @@ public class CallReceiver extends PhonecallReceiver {
     @Override
     protected void onOutgoingCallEnded(Context ctx, String number, Date start, Date end)
     {
+        Log.d(TAG, "onOutgoingCallEnded: " + number);
+
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
         // check if app is enabled in't settings
@@ -106,6 +115,9 @@ public class CallReceiver extends PhonecallReceiver {
     @Override
     protected void onMissedCall(Context ctx, String number, Date start)
     {
+        Log.d(TAG, "onMissedCall: " + number);
+
+
         SharedPreferences sharedPref = ctx.getSharedPreferences(ctx.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
         // check if app is enabled in't settings
